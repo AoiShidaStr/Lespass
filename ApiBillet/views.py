@@ -58,13 +58,9 @@ def get_permission_Api_LR_Any_CU_Admin(self: ViewSet):
         # Tout le monde peut list et retrieve
         permission_classes = [permissions.AllowAny]
     else:
-        api_key = get_apikey_valid(self)
-        user = api_key.user if api_key else None
-        if not user:
-            return False
-
-        # user doit être admin dans tenant
-        self.request.user = user
+        # Clé API + admin tenant pour tout le reste.
+        # TenantAdminApiPermission valide la clé et refuse proprement (403)
+        # si elle est absente ou invalide.
         permission_classes = [TenantAdminApiPermission]
 
     return [permission() for permission in permission_classes]

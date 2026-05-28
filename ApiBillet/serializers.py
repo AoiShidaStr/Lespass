@@ -1089,6 +1089,16 @@ class ApiReservationValidator(serializers.Serializer):
         options = attrs.get('options')
         to_mail: bool = attrs.get('to_mail')
 
+        # Utilisateur de la commande : l'utilisateur connecté s'il existe,
+        # sinon on récupère/crée le compte (inactif) lié à l'email fourni.
+        # Import local pour éviter un import circulaire avec AuthBillet.utils.
+        from AuthBillet.utils import get_or_create_user
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            self.user_commande = request.user
+        else:
+            self.user_commande = get_or_create_user(attrs.get('email'), send_mail=to_mail)
+
         resas = event.valid_tickets_count()
 
         if event.max_per_user:
